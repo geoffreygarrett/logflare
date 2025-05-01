@@ -78,6 +78,8 @@ config :logflare,
          live_dashboard: System.get_env("LOGFLARE_ENABLE_LIVE_DASHBOARD", "false") == "true"
        )
 
+ipv6? = System.get_env("ECTO_IPV6", "false") == "true"
+
 config :logflare,
        Logflare.Repo,
        filter_nil_kv_pairs.(
@@ -88,6 +90,8 @@ config :logflare,
            ),
          database: System.get_env("DB_DATABASE"),
          hostname: System.get_env("DB_HOSTNAME"),
+         ipv6: ipv6?,
+         socket_options: if(ipv6?, do: [:inet6], else: []),
          password: System.get_env("DB_PASSWORD"),
          username: System.get_env("DB_USERNAME"),
          after_connect:
@@ -100,7 +104,7 @@ config :logflare,
              do: String.to_integer(System.get_env("DB_PORT")),
              else: nil
            )
-       )
+         )
 
 if System.get_env("LOGFLARE_MIN_CLUSTER_SIZE") do
   config :logflare,
