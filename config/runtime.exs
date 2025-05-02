@@ -78,7 +78,7 @@ config :logflare,
          live_dashboard: System.get_env("LOGFLARE_ENABLE_LIVE_DASHBOARD", "false") == "true"
        )
 
-ipv6? = System.get_env("ECTO_IPV6", "false") == "true"
+maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
 config :logflare,
        Logflare.Repo,
@@ -90,8 +90,7 @@ config :logflare,
            ),
          database: System.get_env("DB_DATABASE"),
          hostname: System.get_env("DB_HOSTNAME"),
-         ipv6: ipv6?,
-         socket_options: if(ipv6?, do: [:inet6], else: []),
+         socket_options: maybe_ipv6,
          password: System.get_env("DB_PASSWORD"),
          username: System.get_env("DB_USERNAME"),
          after_connect:
