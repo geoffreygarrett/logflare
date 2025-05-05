@@ -65,6 +65,22 @@ config :logflare,
          live_dashboard: System.get_env("LOGFLARE_ENABLE_LIVE_DASHBOARD", "false") == "true"
        )
 
+maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+
+config :logflare, :cainophile_postgres,
+       epgsql: %{
+         port:
+           if(System.get_env("DB_PORT") != nil,
+             do: String.to_integer(System.get_env("DB_PORT")),
+             else: nil
+           ),
+         host: System.get_env("DB_HOSTNAME"),
+         username: System.get_env("DB_USERNAME"),
+         password: System.get_env("DB_PASSWORD"),
+         database: System.get_env("DB_DATABASE"),
+         socket_options: maybe_ipv6
+       }
+
 config :logflare,
        Logflare.Repo,
        filter_nil_kv_pairs.(
@@ -75,6 +91,7 @@ config :logflare,
            ),
          database: System.get_env("DB_DATABASE"),
          hostname: System.get_env("DB_HOSTNAME"),
+         socket_options: maybe_ipv6,
          password: System.get_env("DB_PASSWORD"),
          username: System.get_env("DB_USERNAME"),
          after_connect:
