@@ -67,20 +67,6 @@ config :logflare,
 
 maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
-config :logflare, :cainophile_postgres,
-       epgsql: %{
-         port:
-           if(System.get_env("DB_PORT") != nil,
-             do: String.to_integer(System.get_env("DB_PORT")),
-             else: nil
-           ),
-         host: System.get_env("DB_HOSTNAME"),
-         username: System.get_env("DB_USERNAME"),
-         password: System.get_env("DB_PASSWORD"),
-         database: System.get_env("DB_DATABASE"),
-         socket_options: maybe_ipv6
-       }
-
 config :logflare,
        Logflare.Repo,
        filter_nil_kv_pairs.(
@@ -221,6 +207,8 @@ if config_env() != :test do
   config :grpc, port: System.get_env("LOGFLARE_GRPC_PORT", "50051") |> String.to_integer()
 end
 
+backend_maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+
 cond do
   System.get_env("LOGFLARE_SINGLE_TENANT", "false") == "true" &&
       not is_nil(System.get_env("POSTGRES_BACKEND_URL")) ->
@@ -228,7 +216,8 @@ cond do
            :postgres_backend_adapter,
            filter_nil_kv_pairs.(
              url: System.get_env("POSTGRES_BACKEND_URL"),
-             schema: System.get_env("POSTGRES_BACKEND_SCHEMA")
+             schema: System.get_env("POSTGRES_BACKEND_SCHEMA"),
+             socket_options: System.get_env("POSTGRES_BACKEND_IPV6") in ~w(true 1), do: [:inet6], else: []
            )
 
   config_env() != :test ->
