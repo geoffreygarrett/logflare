@@ -23,6 +23,8 @@ defmodule Logflare.Backends.Adaptor.PostgresAdaptor.SharedRepo do
     config = backend.config
     default_pool_size = Application.fetch_env!(:logflare, :postgres_backend_adapter)[:pool_size]
     schema = Map.get(config, :schema)
+    socket_options = Application.get_env(:logflare, Repo)[:socket_options] || []
+
 
     url = Map.get(config, :url)
 
@@ -31,6 +33,7 @@ defmodule Logflare.Backends.Adaptor.PostgresAdaptor.SharedRepo do
       pool_size: Map.get(config, :pool_size, default_pool_size),
       # Wait until repo is fully up and running
       sync_connect: true,
+      socket_options: socket_options,
       after_connect: {__MODULE__, :__after_connect__, [schema]}
     ]
 
